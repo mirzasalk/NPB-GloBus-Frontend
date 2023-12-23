@@ -8,8 +8,8 @@ interface FormData {
   Email: string;
   DateOfBirth: string;
   Password: string;
-  ConfirmPassword: string;
   City: string;
+  Address: string;
   PhoneNumber: string;
   Gender: string | null;
 }
@@ -22,18 +22,20 @@ interface FormErrors {
   Password: string;
   ConfirmPassword: string;
   City: string;
+  Address: string;
   PhoneNumber: string;
   Gender: string;
 }
 
 const Register: React.FC = () => {
+  const [ConfirmPassword, setConfirmPassword] = useState<string>();
   const [formData, setFormData] = useState<FormData>({
     FirstName: "",
     LastName: "",
     Email: "",
     DateOfBirth: "",
     Password: "",
-    ConfirmPassword: "",
+    Address: "",
     City: "",
     PhoneNumber: "",
     Gender: null,
@@ -45,6 +47,7 @@ const Register: React.FC = () => {
     Email: "",
     DateOfBirth: "",
     Password: "",
+    Address: "",
     ConfirmPassword: "",
     City: "",
     PhoneNumber: "",
@@ -57,7 +60,7 @@ const Register: React.FC = () => {
   };
 
   const handleOptionChange = (event: ChangeEvent<HTMLInputElement>) => {
-    handleInputChange("Gender", event.target.value);
+    handleInputChange("Gender", event.target.value); //ovo menjaj
   };
 
   const validateForm = (): boolean => {
@@ -69,6 +72,7 @@ const Register: React.FC = () => {
       Email: "",
       DateOfBirth: "",
       Password: "",
+      Address: "",
       ConfirmPassword: "",
       City: "",
       PhoneNumber: "",
@@ -98,7 +102,7 @@ const Register: React.FC = () => {
     }
 
     // Validacija za potvrdu lozinke
-    if (formData.Password !== formData.ConfirmPassword) {
+    if (formData.Password !== ConfirmPassword) {
       newErrors.ConfirmPassword = "Passwords do not match.";
       isValid = false;
     }
@@ -118,11 +122,18 @@ const Register: React.FC = () => {
     event.preventDefault();
 
     if (validateForm()) {
+      console.log(formData);
       try {
         const response = await axios.post(
-          "http://localhost:5093/register",
-          formData
+          "https://localhost:7269/api/Users/add",
+          formData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
+        console.log(response);
         return response.data;
       } catch (error) {
         console.log("Registration failed", error);
@@ -213,13 +224,24 @@ const Register: React.FC = () => {
               type="password"
               id="confirmPassword"
               placeholder="Confirm Password"
-              value={formData.ConfirmPassword}
-              onChange={(e) =>
-                handleInputChange("ConfirmPassword", e.target.value)
-              }
+              value={ConfirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
             />
           </div>
           <span className="error">{errors.ConfirmPassword}</span>
+        </div>
+        <div className="inputDiv">
+          <div className="inputHelperDiv">
+            <label htmlFor="Address">Address:</label>
+            <input
+              type="text"
+              id="city"
+              placeholder="City"
+              value={formData.Address}
+              onChange={(e) => handleInputChange("Address", e.target.value)}
+            />
+          </div>
+          <span className="error">{errors.Address}</span>
         </div>
 
         <div className="inputDiv">
