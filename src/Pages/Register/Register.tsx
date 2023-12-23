@@ -136,7 +136,7 @@ const Register: React.FC = () => {
         console.log(response);
         return response.data;
       } catch (error) {
-        console.log("Registration failed", error);
+        console.log("Registration failed. Check the errors.", error);
       }
     } else {
       console.log("Form is invalid. Please check the errors.");
