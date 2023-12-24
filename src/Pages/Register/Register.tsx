@@ -1,5 +1,6 @@
 import "./register.css";
-import axios from "axios";
+
+import axiosInstance from "../../api/axios-config";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 
 interface FormData {
@@ -122,17 +123,8 @@ const Register: React.FC = () => {
     event.preventDefault();
 
     if (validateForm()) {
-      console.log(formData);
       try {
-        const response = await axios.post(
-          "https://localhost:7269/api/Users/add",
-          formData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await axiosInstance.post("Users/add", formData);
         console.log(response);
         return response.data;
       } catch (error) {
