@@ -1,7 +1,8 @@
 import "./login.css";
-
+import toast from "react-hot-toast";
 import React, { useState, FormEvent } from "react";
 import axiosInstance from "../../api/axios-config";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   Email: string;
@@ -14,6 +15,7 @@ interface FormErrors {
 }
 
 const LogIn: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     Email: "",
     Password: "",
@@ -57,22 +59,43 @@ const LogIn: React.FC = () => {
 
     return isValid;
   };
+  const getAll = async (event: FormEvent) => {
+    event.preventDefault();
+    const jwtToken = localStorage.getItem("token");
 
+    try {
+      console.log(jwtToken);
+      const response = await axiosInstance.get("Users/getAll", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+      if (response) {
+        console.log(response);
+        toast.success("bravo");
+      }
+    } catch (error) {
+      toast.error("Lose.");
+    }
+  };
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     if (validateForm()) {
-      console.log(formData);
       try {
-        const response = await axiosInstance.post("Users/add", formData, {
+        const response = await axiosInstance.post("Users/login", formData, {
           headers: {
             "Content-Type": "application/json",
           },
         });
-        console.log(response);
-        return response.data;
-      } catch (error) {
-        console.log("Registration failed", error);
+
+        toast.success("Log in successfull");
+
+        localStorage.setItem("token", response.data.token);
+        navigate("/home");
+      } catch (error: any) {
+        toast.error(error.response.data.Message);
       }
     } else {
       console.log("Form is invalid. Please check the errors.");
@@ -112,7 +135,8 @@ const LogIn: React.FC = () => {
           <span className="error">{errors.Password}</span>
         </div>
 
-        <button onClick={handleSubmit}>Register</button>
+        <button onClick={handleSubmit}>Log in</button>
+        <button onClick={getAll}>getAll</button>
       </div>
     </div>
   );

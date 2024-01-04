@@ -1,5 +1,6 @@
 import "./register.css";
-
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../api/axios-config";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 
@@ -29,6 +30,7 @@ interface FormErrors {
 }
 
 const Register: React.FC = () => {
+  const navigate = useNavigate();
   const [ConfirmPassword, setConfirmPassword] = useState<string>();
   const [formData, setFormData] = useState<FormData>({
     FirstName: "",
@@ -126,8 +128,10 @@ const Register: React.FC = () => {
       try {
         const response = await axiosInstance.post("Users/add", formData);
         console.log(response);
-        return response.data;
-      } catch (error) {
+        toast.success("Register successfull");
+        navigate("/logIn");
+      } catch (error: any) {
+        toast.error(error.response.data.Message);
         console.log("Registration failed", error);
       }
     } else {
