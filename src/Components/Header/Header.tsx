@@ -5,9 +5,9 @@ const Header = () => {
     <div id="headerMain">
       <img className="logoImg" src="./globusLogo.png" alt="logo" />
       <div className="logIn-LogOutDiv">
-        <a href="#">Log in</a>
+        <a href="/logIn">Log in</a>
         <p>/</p>
-        <a href="#">Register</a>
+        <a href="/">Register</a>
       </div>
     </div>
   );

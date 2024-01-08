@@ -1,0 +1,145 @@
+import "./login.css";
+import toast from "react-hot-toast";
+import React, { useState, FormEvent } from "react";
+import axiosInstance from "../../api/axios-config";
+import { useNavigate } from "react-router-dom";
+
+interface FormData {
+  Email: string;
+  Password: string;
+}
+
+interface FormErrors {
+  Email: string;
+  Password: string;
+}
+
+const LogIn: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<FormData>({
+    Email: "",
+    Password: "",
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({
+    Email: "",
+    Password: "",
+  });
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    setErrors({ ...errors, [field]: "" });
+  };
+
+  const validateForm = (): boolean => {
+    let isValid = true;
+
+    const newErrors: FormErrors = {
+      Email: "",
+      Password: "",
+    };
+
+    // Validacija za prazna polja
+    Object.keys(formData).forEach((key) => {
+      const typedKey = key as keyof FormData;
+      if (!formData[typedKey]) {
+        newErrors[typedKey] = "This field is required.";
+        isValid = false;
+      }
+    });
+
+    // Validacija za email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.Email && !emailRegex.test(formData.Email)) {
+      newErrors.Email = "Invalid email address.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+
+    return isValid;
+  };
+  const getAll = async (event: FormEvent) => {
+    event.preventDefault();
+    const jwtToken = localStorage.getItem("token");
+
+    try {
+      console.log(jwtToken);
+      const response = await axiosInstance.get("Users/getAll", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
+      if (response) {
+        console.log(response);
+        toast.success("bravo");
+      }
+    } catch (error) {
+      toast.error("Lose.");
+    }
+  };
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+
+    if (validateForm()) {
+      try {
+        const response = await axiosInstance.post("Users/login", formData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        toast.success("Log in successfull");
+
+        localStorage.setItem("token", response.data.token);
+        navigate("/home");
+      } catch (error: any) {
+        toast.error(error.response.data.Message);
+      }
+    } else {
+      console.log("Form is invalid. Please check the errors.");
+    }
+  };
+
+  return (
+    <div id="LogInMain">
+      <div className="center-LogIn-div">
+        <img className="userIcon" src="regIcon2.png" alt="Register now" />
+
+        <div className="logInInputDiv">
+          <div className="logInInputHelperDiv">
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Email"
+              value={formData.Email}
+              onChange={(e) => handleInputChange("Email", e.target.value)}
+            />
+          </div>
+          <span className="error">{errors.Email}</span>
+        </div>
+
+        <div className="logInInputDiv">
+          <div className="logInInputHelperDiv">
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Password"
+              value={formData.Password}
+              onChange={(e) => handleInputChange("Password", e.target.value)}
+            />
+          </div>
+          <span className="error">{errors.Password}</span>
+        </div>
+
+        <button onClick={handleSubmit}>Log in</button>
+        <button onClick={getAll}>getAll</button>
+      </div>
+    </div>
+  );
+};
+
+export default LogIn;
