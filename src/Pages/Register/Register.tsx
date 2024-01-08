@@ -128,11 +128,17 @@ const Register: React.FC = () => {
       try {
         const response = await axiosInstance.post("Users/add", formData);
         console.log(response);
+
         toast.success("Register successfull");
         navigate("/logIn");
       } catch (error: any) {
         toast.error(error.response.data.Message);
         console.log("Registration failed", error);
+
+        return response.data;
+      } catch (error) {
+        console.log("Registration failed. Check the errors.", error);
+
       }
     } else {
       console.log("Form is invalid. Please check the errors.");
