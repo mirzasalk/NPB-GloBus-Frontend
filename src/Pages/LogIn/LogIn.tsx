@@ -3,6 +3,8 @@ import toast from "react-hot-toast";
 import React, { useState, FormEvent } from "react";
 import axiosInstance from "../../api/axios-config";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import UserContext from "../../reactContext/UserContext";
 
 interface FormData {
   Email: string;
@@ -15,6 +17,8 @@ interface FormErrors {
 }
 
 const LogIn: React.FC = () => {
+  const { setUser } = useContext(UserContext) ?? {};
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     Email: "",
@@ -64,7 +68,6 @@ const LogIn: React.FC = () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
-      console.log(jwtToken);
       const response = await axiosInstance.get("Users/getAll", {
         headers: {
           "Content-Type": "application/json",
@@ -90,9 +93,17 @@ const LogIn: React.FC = () => {
           },
         });
 
+        if (setUser) {
+          setUser(response.data.data);
+        } else {
+          console.error("setUser is undefined");
+        }
+
         toast.success("Log in successfull");
 
         localStorage.setItem("token", response.data.token);
+        console.log(response.data.data);
+
         navigate("/home");
       } catch (error: any) {
         toast.error(error.response.data.Message);
