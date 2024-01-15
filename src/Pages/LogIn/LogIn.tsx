@@ -63,25 +63,7 @@ const LogIn: React.FC = () => {
 
     return isValid;
   };
-  const getAll = async (event: FormEvent) => {
-    event.preventDefault();
-    const jwtToken = localStorage.getItem("token");
 
-    try {
-      const response = await axiosInstance.get("Users/getAll", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      });
-      if (response) {
-        console.log(response);
-        toast.success("bravo");
-      }
-    } catch (error) {
-      toast.error("Lose.");
-    }
-  };
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -102,9 +84,9 @@ const LogIn: React.FC = () => {
         toast.success("Log in successfull");
 
         localStorage.setItem("token", response.data.token);
-        console.log(response.data.data);
 
-        navigate("/home");
+        console.log(response.data.data);
+        response.data.data.role == "passenger" ? navigate("/home") : null;
       } catch (error: any) {
         toast.error(error.response.data.Message);
       }
@@ -147,7 +129,6 @@ const LogIn: React.FC = () => {
         </div>
 
         <button onClick={handleSubmit}>Log in</button>
-        <button onClick={getAll}>getAll</button>
       </div>
     </div>
   );
