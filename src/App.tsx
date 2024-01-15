@@ -5,6 +5,8 @@ import Register from "./Pages/Register/Register";
 import LogIn from "./Pages/LogIn/LogIn";
 import { Toaster } from "react-hot-toast";
 import Home from "./Pages/Home/Home";
+import { UserProvider } from "./reactContext/UserContext";
+
 function App() {
   return (
     <div className="appMain">
@@ -26,14 +28,16 @@ function App() {
           },
         }}
       />
-      <BrowserRouter>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Register />} />
-          <Route path="/logIn" element={<LogIn />} />
-          <Route path="/home" element={<Home />} />
-        </Routes>
-      </BrowserRouter>
+      <UserProvider>
+        <BrowserRouter>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Register />} />
+            <Route path="/logIn" element={<LogIn />} />
+            <Route path="/home" element={<Home />} />
+          </Routes>
+        </BrowserRouter>
+      </UserProvider>
     </div>
   );
 }

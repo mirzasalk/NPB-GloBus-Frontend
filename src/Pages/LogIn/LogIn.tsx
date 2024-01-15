@@ -3,6 +3,8 @@ import toast from "react-hot-toast";
 import React, { useState, FormEvent } from "react";
 import axiosInstance from "../../api/axios-config";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import UserContext from "../../reactContext/UserContext";
 
 interface FormData {
   Email: string;
@@ -15,6 +17,8 @@ interface FormErrors {
 }
 
 const LogIn: React.FC = () => {
+  const { setUser } = useContext(UserContext) ?? {};
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     Email: "",
@@ -59,26 +63,7 @@ const LogIn: React.FC = () => {
 
     return isValid;
   };
-  const getAll = async (event: FormEvent) => {
-    event.preventDefault();
-    const jwtToken = localStorage.getItem("token");
 
-    try {
-      console.log(jwtToken);
-      const response = await axiosInstance.get("Users/getAll", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwtToken}`,
-        },
-      });
-      if (response) {
-        console.log(response);
-        toast.success("bravo");
-      }
-    } catch (error) {
-      toast.error("Lose.");
-    }
-  };
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -90,10 +75,18 @@ const LogIn: React.FC = () => {
           },
         });
 
+        if (setUser) {
+          setUser(response.data.data);
+        } else {
+          console.error("setUser is undefined");
+        }
+
         toast.success("Log in successfull");
 
         localStorage.setItem("token", response.data.token);
-        navigate("/home");
+
+        console.log(response.data.data);
+        response.data.data.role == "passenger" ? navigate("/home") : null;
       } catch (error: any) {
         toast.error(error.response.data.Message);
       }
@@ -136,7 +129,6 @@ const LogIn: React.FC = () => {
         </div>
 
         <button onClick={handleSubmit}>Log in</button>
-        <button onClick={getAll}>getAll</button>
       </div>
     </div>
   );
