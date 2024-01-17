@@ -180,7 +180,19 @@
 .myTicketField {
   border: 1px solid black;
   width: 95%;
-  height: 7vh;
+  height: 13vh;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1em 1em 1em;
+  margin-top: 0.3em;
+}
+.ticketInfoDiv {
+  width: 100%;
+  width: 95%;
+  height: 5vh;
   color: black;
   display: flex;
   justify-content: space-between;

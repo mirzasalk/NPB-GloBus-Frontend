@@ -3,6 +3,8 @@ import axiosInstance from "../../api/axios-config";
 import React, { useEffect, FormEvent } from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { jsPDF } from "jspdf";
+import { useNavigate } from "react-router-dom";
 
 interface UserData {
   id: number;
@@ -31,6 +33,9 @@ interface TicketType {
   type: string;
   price: number;
 }
+interface AddCreditRequest {
+  addCreditValue: number;
+}
 
 interface newTicket {
   UserId: number;
@@ -55,6 +60,8 @@ interface Ticket {
 }
 
 const Home: React.FC = () => {
+  let countForRole = 0;
+  const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDropdownSecond, setShowDropdownSecond] = useState(false);
   const [showDropdownThird, setShowDropdownThird] = useState(false);
@@ -83,7 +90,7 @@ const Home: React.FC = () => {
     price: 0,
   });
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>();
-  const [pasengerTickets, setPasengerTickets] = useState<Ticket[]>();
+
   const [reversedPassengerTickets, setReversedPassengerTickets] =
     useState<Ticket[]>();
 
@@ -126,8 +133,9 @@ const Home: React.FC = () => {
       if (response) {
         setUser(response.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
+      navigate("/logIn");
     }
   };
 
@@ -160,8 +168,6 @@ const Home: React.FC = () => {
         },
       });
       if (response) {
-        console.log(response);
-        setPasengerTickets(response.data);
         setReversedPassengerTickets(response.data.reverse());
       }
     } catch (error) {
@@ -194,88 +200,94 @@ const Home: React.FC = () => {
   }, []);
   useEffect(() => {
     getUserTicket();
+    console.log(user);
+    countForRole++;
+    if (countForRole > 3 && user.role != "passenger") {
+      navigate("/logIn");
+    }
   }, [user]);
 
   const validateTicketInfo = () => {
-    if (chosenTicketTypes.type != "Choose a type") {
-      newTicket.UserId = user.id;
-      newTicket.TicketType = chosenTicketTypes.id;
-      if (chosenTicketTypes.type != "oneTime") {
-        newTicket.Line = "";
-        newTicket.Start = "";
-        newTicket.Destination = "";
-        newTicket.fromDate = new Date();
-        if (chosenTicketTypes.type == "daily") {
-          const currentDate = new Date();
-
-          const tomorrowDate = new Date(
-            currentDate.getTime() + 24 * 60 * 60 * 1000
-          );
-
-          newTicket.ToDate = tomorrowDate;
-        } else if (chosenTicketTypes.type == "monthly") {
-          const currentDate = new Date();
-
-          const nextMonthDate = new Date(currentDate.getTime());
-          nextMonthDate.setMonth(currentDate.getMonth() + 1);
-
-          newTicket.ToDate = nextMonthDate;
-        } else {
-          const currentDate = new Date();
-
-          const nextYearDate = new Date(currentDate.getTime());
-
-          nextYearDate.setFullYear(currentDate.getFullYear() + 1);
-
-          newTicket.ToDate = nextYearDate;
-        }
-        setShowDivForByTicket(true);
-
-        setNewTicketState(newTicket);
-      } else {
-        if (
-          chosenLine.name == "Choose a line" ||
-          start == "Choose a start station" ||
-          destination == "Choose a destination"
-        ) {
-          toast.error("Please fill in all the fields");
-        } else {
-          newTicket.Line = chosenLine.name;
-          newTicket.Start = start;
-          newTicket.Destination = destination;
+    if (user.credit > chosenTicketTypes.price) {
+      if (chosenTicketTypes.type != "Choose a type") {
+        newTicket.UserId = user.id;
+        newTicket.TicketType = chosenTicketTypes.id;
+        if (chosenTicketTypes.type != "oneTime") {
+          newTicket.Line = "";
+          newTicket.Start = "";
+          newTicket.Destination = "";
           newTicket.fromDate = new Date();
-          const currentDate = new Date();
+          if (chosenTicketTypes.type == "daily") {
+            const currentDate = new Date();
 
-          const nextHourDate = new Date(currentDate.getTime());
-          nextHourDate.setHours(currentDate.getHours() + 1);
-          newTicket.ToDate = nextHourDate;
+            const tomorrowDate = new Date(
+              currentDate.getTime() + 24 * 60 * 60 * 1000
+            );
+
+            newTicket.ToDate = tomorrowDate;
+          } else if (chosenTicketTypes.type == "monthly") {
+            const currentDate = new Date();
+
+            const nextMonthDate = new Date(currentDate.getTime());
+            nextMonthDate.setMonth(currentDate.getMonth() + 1);
+
+            newTicket.ToDate = nextMonthDate;
+          } else {
+            const currentDate = new Date();
+
+            const nextYearDate = new Date(currentDate.getTime());
+
+            nextYearDate.setFullYear(currentDate.getFullYear() + 1);
+
+            newTicket.ToDate = nextYearDate;
+          }
           setShowDivForByTicket(true);
 
           setNewTicketState(newTicket);
+        } else {
+          if (
+            chosenLine.name == "Choose a line" ||
+            start == "Choose a start station" ||
+            destination == "Choose a destination"
+          ) {
+            toast.error("Please fill in all the fields");
+          } else {
+            newTicket.Line = chosenLine.name;
+            newTicket.Start = start;
+            newTicket.Destination = destination;
+            newTicket.fromDate = new Date();
+            const currentDate = new Date();
+
+            const nextHourDate = new Date(currentDate.getTime());
+            nextHourDate.setHours(currentDate.getHours() + 1);
+            newTicket.ToDate = nextHourDate;
+            setShowDivForByTicket(true);
+
+            setNewTicketState(newTicket);
+          }
         }
+      } else {
+        toast.error("Please fill in all the fields");
       }
     } else {
-      toast.error("Please fill in all the fields");
+      toast.error("You don't have enough credit; please recharge your balance");
     }
   };
 
   const confirmPurchase = async () => {
     const jwtToken = localStorage.getItem("token");
     try {
-      const response = await axiosInstance.post(
-        "Users/addTicket",
-        newTicketState,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${jwtToken}`,
-          },
-        }
-      );
+      await axiosInstance.post("Users/addTicket", newTicketState, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      });
 
       toast.success("You have successfully purchased the ticket.");
       setShowDivForByTicket(!showDivForByTicket);
       getUserTicket();
+      getUserById();
     } catch (error: any) {
       toast.error("Error during purchase, please try again later.");
       console.log(error);
@@ -285,11 +297,11 @@ const Home: React.FC = () => {
   const addCredit = async (event: FormEvent) => {
     event.preventDefault();
     const jwtToken = localStorage.getItem("token");
-    console.log(addCreditValue);
+
     try {
-      const response = await axiosInstance.post(
+      await axiosInstance.post(
         "Users/addCredit",
-        newTicketState,
+        { addCreditValue: addCreditValue } as AddCreditRequest,
         {
           headers: {
             "Content-Type": "application/json",
@@ -299,13 +311,60 @@ const Home: React.FC = () => {
       );
 
       toast.success("You have successfully added credit.");
+
       setShowAddCreditDiv(!showAddCreditDiv);
       getUserById();
     } catch (error: any) {
-      toast.error("Error during purchase, please try again later.");
+      toast.error("Error during credit addition, please try again later.");
       console.log(error);
     }
   };
+
+  const generatePDF = (t: Ticket) => {
+    const pdf = new jsPDF();
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+
+    pdf.text("GLOBUS Ticket", 70, 57);
+
+    pdf.setFont("helvetica");
+    pdf.setFontSize(12);
+
+    pdf.rect(15, 50, 180, 75); // x, y, širina, visina
+
+    pdf.text(`Card Num.: ${t.id}`, 20, 70);
+
+    pdf.text(
+      `Type:${
+        t.ticketType == 1
+          ? "oneTime"
+          : t.ticketType == 2
+          ? "daily"
+          : t.ticketType == 3
+          ? "Monthly"
+          : "Yearly"
+      }`,
+      20,
+      80
+    );
+    pdf.text(`From Date: ${t.fromDate}`, 100, 70);
+    pdf.text(`To Date: ${t.toDate}`, 100, 80);
+
+    pdf.line(20, 82, 190, 82);
+
+    pdf.text(`Line:${t.line == "" ? "All line" : t.line} `, 20, 89);
+    pdf.text(`Start: ${t.start == "" ? "All Stations" : t.start}`, 100, 100);
+    pdf.text(
+      `Destination: ${t.destination == "" ? "All Stations" : t.destination}`,
+      20,
+      100
+    );
+
+    pdf.addImage("barkod.png", "PNG", 150, 103, 40, 15);
+
+    pdf.save("globus_ticket.pdf");
+  };
+
   return (
     <div id="homeMain">
       <div className="viewForPassenger">
@@ -353,29 +412,41 @@ const Home: React.FC = () => {
         <div className="mainForPassengerView">
           {ByTicketOrMyTicket ? (
             <div className="MyTicketDiv">
-              {reversedPassengerTickets?.map((t) => {
+              {reversedPassengerTickets?.map((t, index) => {
                 return (
-                  <div className="myTicketField">
-                    <div> {t.id}</div>
-                    <div>
-                      {" "}
-                      {t.ticketType == 1
-                        ? "oneTime"
-                        : t.ticketType == 2
-                        ? "daily"
-                        : t.ticketType == 3
-                        ? "monthly"
-                        : "yearly"}
+                  <div className="myTicketField" key={index}>
+                    <div className="ticketInfoDiv">
+                      <div> {t.id}</div>
+                      <div>
+                        {" "}
+                        {t.ticketType == 1
+                          ? "oneTime"
+                          : t.ticketType == 2
+                          ? "daily"
+                          : t.ticketType == 3
+                          ? "monthly"
+                          : "yearly"}
+                      </div>
+
+                      {t.line != "" ? <div> {t.line}</div> : null}
+                      {t.start != "" ? <div> {t.start}</div> : null}
+
+                      {t.destination != "" ? <div> {t.destination}</div> : null}
+
+                      <div>{t.fromDate?.toString()} </div>
+                      <div>{t.toDate?.toString()} </div>
+                      <div> {t.isApproved ? "Approved" : "Pending"}</div>
                     </div>
-
-                    {t.line != "" ? <div> {t.line}</div> : null}
-                    {t.start != "" ? <div> {t.start}</div> : null}
-
-                    {t.destination != "" ? <div> {t.destination}</div> : null}
-
-                    <div>{t.fromDate?.toString()} </div>
-                    <div>{t.toDate?.toString()} </div>
-                    <div> {t.isApproved ? "Approved" : "Pending"}</div>
+                    {t.isApproved ? (
+                      <button
+                        className="toPDFBtnDiv"
+                        onClick={() => {
+                          generatePDF(t);
+                        }}
+                      >
+                        Download in PDF format
+                      </button>
+                    ) : null}
                   </div>
                 );
               })}
