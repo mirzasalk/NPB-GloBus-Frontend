@@ -6,6 +6,7 @@ import LogIn from "./Pages/LogIn/LogIn";
 import { Toaster } from "react-hot-toast";
 import Home from "./Pages/Home/Home";
 import { UserProvider } from "./reactContext/UserContext";
+import InspectorPage from "./Pages/inspectorPage/InspectorPage";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/" element={<Register />} />
             <Route path="/logIn" element={<LogIn />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/inspectorPage" element={<InspectorPage />} />
           </Routes>
         </BrowserRouter>
       </UserProvider>

@@ -85,8 +85,11 @@ const LogIn: React.FC = () => {
 
         localStorage.setItem("token", response.data.token);
 
-        console.log(response.data.data);
-        response.data.data.role == "passenger" ? navigate("/home") : null;
+        response.data.data.role == "passenger"
+          ? navigate("/home")
+          : response.data.data.role == "inspector"
+          ? navigate("/inspectorPage")
+          : null;
       } catch (error: any) {
         toast.error(error.response.data.Message);
       }
