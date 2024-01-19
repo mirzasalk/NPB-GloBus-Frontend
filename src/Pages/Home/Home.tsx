@@ -33,8 +33,8 @@ interface TicketType {
   type: string;
   price: number;
 }
-interface AddCreditRequest {
-  addCreditValue: number;
+interface AddCreditDTO {
+  Credit: number;
 }
 
 interface newTicket {
@@ -301,7 +301,7 @@ const Home: React.FC = () => {
     try {
       await axiosInstance.post(
         "Users/addCredit",
-        { addCreditValue: addCreditValue } as AddCreditRequest,
+        { Credit: addCreditValue } as AddCreditDTO,
         {
           headers: {
             "Content-Type": "application/json",
