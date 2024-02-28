@@ -38,14 +38,15 @@ interface AddCreditDTO {
 }
 
 interface newTicket {
-  UserId: number;
-  Line: string;
+  Passenger: UserData | undefined;
+  Line: Line | undefined;
   Start: string;
   Destination: string;
   fromDate: Date | undefined;
   ToDate: Date | undefined;
-  TicketType: number;
+  TicketType: TicketType | undefined;
   isApproved: Boolean;
+  checkedBy: UserData | null;
 }
 interface Ticket {
   id: number;
@@ -110,14 +111,15 @@ const Home: React.FC = () => {
     credit: 0,
   });
   let newTicket: newTicket = {
-    UserId: 0,
-    Line: "",
+    Passenger: user,
+    Line: chosenLine,
     Start: "",
     Destination: "",
     fromDate: undefined,
     ToDate: undefined,
-    TicketType: 0,
+    TicketType: chosenTicketTypes,
     isApproved: false,
+    checkedBy: null,
   };
 
   const getUserById = async () => {
@@ -149,8 +151,11 @@ const Home: React.FC = () => {
           Authorization: `Bearer ${jwtToken}`,
         },
       });
+      console.log(response.data);
       if (response) {
         setLines(response.data);
+        console.log(lines);
+        console.log(response.data);
       }
     } catch (error) {
       console.log(error);
@@ -199,8 +204,9 @@ const Home: React.FC = () => {
     getTicketTypes();
   }, []);
   useEffect(() => {
-    getUserTicket();
+    // getUserTicket();
     console.log(user);
+    console.log();
     countForRole++;
     if (countForRole > 3 && user.role != "passenger") {
       navigate("/logIn");
@@ -210,10 +216,11 @@ const Home: React.FC = () => {
   const validateTicketInfo = () => {
     if (user.credit > chosenTicketTypes.price) {
       if (chosenTicketTypes.type != "Choose a type") {
-        newTicket.UserId = user.id;
-        newTicket.TicketType = chosenTicketTypes.id;
+        newTicket.Passenger = user;
+        newTicket.TicketType = chosenTicketTypes;
         if (chosenTicketTypes.type != "oneTime") {
-          newTicket.Line = "";
+          newTicket.Line = chosenLine;
+          newTicket.Line.name = "All Line";
           newTicket.Start = "";
           newTicket.Destination = "";
           newTicket.fromDate = new Date();
@@ -252,7 +259,7 @@ const Home: React.FC = () => {
           ) {
             toast.error("Please fill in all the fields");
           } else {
-            newTicket.Line = chosenLine.name;
+            newTicket.Line = chosenLine;
             newTicket.Start = start;
             newTicket.Destination = destination;
             newTicket.fromDate = new Date();
@@ -276,8 +283,9 @@ const Home: React.FC = () => {
 
   const confirmPurchase = async () => {
     const jwtToken = localStorage.getItem("token");
+    console.log(newTicketState);
     try {
-      await axiosInstance.post("Users/addTicket", newTicketState, {
+      await axiosInstance.post("Tickets/addTicket", newTicketState, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${jwtToken}`,
@@ -286,7 +294,7 @@ const Home: React.FC = () => {
 
       toast.success("You have successfully purchased the ticket.");
       setShowDivForByTicket(!showDivForByTicket);
-      getUserTicket();
+      //  getUserTicket();
       getUserById();
     } catch (error: any) {
       toast.error("Error during purchase, please try again later.");
