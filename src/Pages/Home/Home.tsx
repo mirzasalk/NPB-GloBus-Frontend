@@ -5,6 +5,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { jsPDF } from "jspdf";
 import { useNavigate } from "react-router-dom";
+import QRCode from "qrcode";
 
 interface UserData {
   id: number;
@@ -28,11 +29,13 @@ interface Line {
   stations: string[];
   distance: string[];
 }
+
 interface TicketType {
   id: number;
   type: string;
   price: number;
 }
+
 interface AddCreditDTO {
   Credit: number;
 }
@@ -45,7 +48,7 @@ interface newTicket {
   fromDate: Date | undefined;
   ToDate: Date | undefined;
   TicketType: number;
-  isApproved: Boolean;
+  isApproved: boolean;
 }
 interface Ticket {
   id: number;
@@ -56,7 +59,8 @@ interface Ticket {
   fromDate: Date | undefined;
   toDate: Date | undefined;
   ticketType: number;
-  isApproved: Boolean;
+  isApproved: boolean;
+  status: string;
 }
 
 const Home: React.FC = () => {
@@ -109,7 +113,7 @@ const Home: React.FC = () => {
     role: "",
     credit: 0,
   });
-  let newTicket: newTicket = {
+  const newTicket: newTicket = {
     UserId: 0,
     Line: "",
     Start: "",
@@ -133,7 +137,7 @@ const Home: React.FC = () => {
       if (response) {
         setUser(response.data);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
       navigate("/logIn");
     }
@@ -143,7 +147,7 @@ const Home: React.FC = () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
-      const response = await axiosInstance.get("Users/getAllLines", {
+      const response = await axiosInstance.get("Admins/getAllLines", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${jwtToken}`,
@@ -151,6 +155,7 @@ const Home: React.FC = () => {
       });
       if (response) {
         setLines(response.data);
+        console.log(response.data);
       }
     } catch (error) {
       console.log(error);
@@ -161,13 +166,14 @@ const Home: React.FC = () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
-      const response = await axiosInstance.get("Users/getUserTicket", {
+      const response = await axiosInstance.get("Users/getUserTickets", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${jwtToken}`,
         },
       });
       if (response) {
+        console.log(response.data);
         setReversedPassengerTickets(response.data.reverse());
       }
     } catch (error) {
@@ -206,6 +212,9 @@ const Home: React.FC = () => {
       navigate("/logIn");
     }
   }, [user]);
+  useEffect(() => {
+    reversedPassengerTickets
+  }, [reversedPassengerTickets]);
 
   const validateTicketInfo = () => {
     if (user.credit > chosenTicketTypes.price) {
@@ -288,7 +297,7 @@ const Home: React.FC = () => {
       setShowDivForByTicket(!showDivForByTicket);
       getUserTicket();
       getUserById();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error during purchase, please try again later.");
       console.log(error);
     }
@@ -314,13 +323,14 @@ const Home: React.FC = () => {
 
       setShowAddCreditDiv(!showAddCreditDiv);
       getUserById();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Error during credit addition, please try again later.");
       console.log(error);
     }
   };
 
-  const generatePDF = (t: Ticket) => {
+  //pdf 
+  const generatePDF = async (t: Ticket) => {
     const pdf = new jsPDF();
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(16);
@@ -362,8 +372,24 @@ const Home: React.FC = () => {
 
     pdf.addImage("barkod.png", "PNG", 150, 103, 40, 15);
 
-    pdf.save("globus_ticket.pdf");
-  };
+
+    // Generate QR code with dynamic data
+  // const qrCodeData = `https://localhost:7269/Tickets/checkTicketWithScanner?ticketId=${t.id}`;
+    const qrCodeData = `${t.id}`;
+  try {
+    pdf.addPage();
+    // Generate QR code and get data URL
+    const qrCodeDataURL = await QRCode.toDataURL(qrCodeData);
+
+    // Add the QR code image to the PDF
+    // pdf.addImage(qrCodeDataURL, 'PNG', 80, 150, 50, 50);
+    pdf.addImage(qrCodeDataURL, 'PNG', 80, 10, 50, 50);
+
+    pdf.save('globus_ticket.pdf');
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+  }
+};
 
   return (
     <div id="homeMain">
@@ -411,10 +437,10 @@ const Home: React.FC = () => {
         </div>
         <div className="mainForPassengerView">
           {ByTicketOrMyTicket ? (
-            <div className="MyTicketDiv">
+            <div className={"MyTicketDiv"}>
               {reversedPassengerTickets?.map((t, index) => {
                 return (
-                  <div className="myTicketField" key={index}>
+                  <div className={t.status == "approved"? "myTicketField" :t.status == "pending"? "myPendingTicketField":"myUnactiveTicketField"} key={index}>
                     <div className="ticketInfoDiv">
                       <div> {t.id}</div>
                       <div>
@@ -435,9 +461,9 @@ const Home: React.FC = () => {
 
                       <div>{t.fromDate?.toString()} </div>
                       <div>{t.toDate?.toString()} </div>
-                      <div> {t.isApproved ? "Approved" : "Pending"}</div>
+                      <div> {t.status}</div>
                     </div>
-                    {t.isApproved ? (
+                    {t.status == "approved" ? (
                       <button
                         className="toPDFBtnDiv"
                         onClick={() => {

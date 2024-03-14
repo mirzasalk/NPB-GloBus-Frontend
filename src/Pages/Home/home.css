@@ -177,9 +177,37 @@
   align-items: center;
   overflow-y: scroll;
 }
+
+
 .myTicketField {
-  border: 1px solid black;
+  box-shadow: rgba(41, 255, 3, 0.25) 0px 54px 55px, rgba(41, 255, 3, 0.25) 0px -12px 30px, rgba(41, 255, 3, 0.25) 0px 4px 6px, rgba(41, 255, 3, 0.25) 0px 12px 13px,rgba(41, 255, 3, 0.25) 0px -3px 5px;
+  margin: .5em;
   width: 95%;
+  height: 13vh;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1em 1em 1em;
+  margin-top: 0.3em;
+}
+.myPendingTicketField{
+  box-shadow: rgb(0, 0, 0) 0px 3px 8px; width: 95%;
+  margin: .5em;
+  height: 13vh;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1em 1em 1em;
+  margin-top: 0.3em;
+  }
+
+.myUnactiveTicketField {
+  box-shadow: rgb(248, 5, 5) 0px 3px 8px; width: 95%;
+  margin: .5em;
   height: 13vh;
   color: black;
   display: flex;
