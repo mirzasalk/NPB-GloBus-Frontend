@@ -8,10 +8,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  
 
   const contextValue: UserContextType = {
     user,
     setUser,
+    
   };
 
   return (
