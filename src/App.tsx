@@ -7,6 +7,9 @@ import { Toaster } from "react-hot-toast";
 import Home from "./Pages/Home/Home";
 import { UserProvider } from "./reactContext/UserContext";
 import InspectorPage from "./Pages/inspectorPage/InspectorPage";
+import AdminPage from "./Pages/AdminPage/AdminPage";
+import AdminLogin from "./Pages/AdminLogin/AdminLogin";
+import QRCodeScanner from "./Components/QRCodeScanner";
 
 function App() {
   return (
@@ -37,6 +40,9 @@ function App() {
             <Route path="/logIn" element={<LogIn />} />
             <Route path="/home" element={<Home />} />
             <Route path="/inspectorPage" element={<InspectorPage />} />
+            <Route path="/adminPage" element={<AdminPage />} />
+            <Route path="/adminLogin" element={<AdminLogin />} />
+            <Route path="/scanner" element={<QRCodeScanner />} />
           </Routes>
         </BrowserRouter>
       </UserProvider>
