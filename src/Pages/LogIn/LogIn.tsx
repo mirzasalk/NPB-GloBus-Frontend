@@ -1,10 +1,12 @@
 import "./login.css";
 import toast from "react-hot-toast";
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent,useEffect } from "react";
 import axiosInstance from "../../api/axios-config";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import UserContext from "../../reactContext/UserContext";
+import QRCodeGenerator from "../../Components/QRCodeGenerator";
+
 
 interface FormData {
   Email: string;
@@ -89,7 +91,7 @@ const LogIn: React.FC = () => {
           ? navigate("/home")
           : response.data.data.role == "inspector"
           ? navigate("/inspectorPage")
-          : null;
+          :  null;
       } catch (error: any) {
         toast.error(error.response.data.Message);
       }
@@ -97,7 +99,9 @@ const LogIn: React.FC = () => {
       console.log("Form is invalid. Please check the errors.");
     }
   };
-
+ useEffect(()=>{
+  localStorage.clear();
+ },[]);
   return (
     <div id="LogInMain">
       <div className="center-LogIn-div">
@@ -133,7 +137,10 @@ const LogIn: React.FC = () => {
 
         <button onClick={handleSubmit}>Log in</button>
       </div>
+      <div>
     </div>
+    </div>
+    
   );
 };
 
