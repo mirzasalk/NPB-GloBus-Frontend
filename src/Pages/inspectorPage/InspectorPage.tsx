@@ -4,12 +4,13 @@ import * as React from "react";
 import axiosInstance from "../../api/axios-config";
 import toast from "react-hot-toast";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface AddCreditDTO {
-  Credit: number;
+interface TicketIdDTO {
+  Id: number;
 }
 
-interface UserData {
+export interface UserData {
   id: number;
   firstName: string;
   lastName: string;
@@ -25,7 +26,7 @@ interface UserData {
   credit: number;
 }
 
-interface Penalty {
+export interface Penalty {
   inspectorId: number;
   passengerID: number;
   dateOfPenalty: Date | undefined;
@@ -33,6 +34,7 @@ interface Penalty {
 }
 
 const InspectorPage: React.FC = () => {
+  const navigate = useNavigate();
   const [myWrittenPenalties, setMyWrittenPenalties] = useState<Penalty[]>();
   const [showWritePenaltyDiv, setShowWritePenaltyDiv] =
     useState<boolean>(false);
@@ -89,7 +91,7 @@ const InspectorPage: React.FC = () => {
       if (response) {
         setUser(response.data);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
     }
   };
@@ -97,13 +99,15 @@ const InspectorPage: React.FC = () => {
   const [changeInspectorView, setChangeInspectorView] =
     useState<string>("Check the ticket");
 
+
+  //check ticket
   const checkTicket = async () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
       const response = await axiosInstance.post(
         "/Users/CheckTicket",
-        { Credit: ticketId } as AddCreditDTO,
+        { Id: ticketId } as TicketIdDTO,
         {
           headers: {
             "Content-Type": "application/json",
@@ -114,7 +118,7 @@ const InspectorPage: React.FC = () => {
       if (response) {
         const datumZaUporedivanje = new Date(response.data.ticket.toDate);
         const danasnjiDatum = new Date();
-        if (datumZaUporedivanje > danasnjiDatum) {
+        if (datumZaUporedivanje > danasnjiDatum && response.data.ticket.isApproved == true) {
           toast.success("Ticket is valid");
         } else {
           toast.error("Ticket is not valid");
@@ -134,7 +138,7 @@ const InspectorPage: React.FC = () => {
       console.log(error);
     }
   };
-
+  
   const WriteAPenalty = async () => {
     const jwtToken = localStorage.getItem("token");
     console.log(penalty, "befor Recording");
@@ -152,19 +156,21 @@ const InspectorPage: React.FC = () => {
 
       if (response.data) {
         toast.success("The penalty has been recorded");
-        console.log(response.data, "affter recording");
+        console.log(response.data, "after recording");
         getMyWrittenPenalties();
         setShowWritePenaltyDiv(false);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
   useEffect(() => {
     getUserById();
   }, []);
   useEffect(() => {
-    console.log(penalty);
     getMyWrittenPenalties();
   }, [penalty]);
+
   return (
     <div id="inspectorPageMain">
       <div className="inspectorPageMainCenterDiv">
@@ -202,6 +208,9 @@ const InspectorPage: React.FC = () => {
 
             <button className="checkButton" onClick={checkTicket}>
               Check
+            </button>
+            <button className="checkButton" onClick={() => {navigate('/scanner');}}>
+              Scan
             </button>
           </div>
         ) : (

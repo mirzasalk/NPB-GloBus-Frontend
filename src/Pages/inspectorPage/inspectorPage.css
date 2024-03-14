@@ -100,7 +100,7 @@
   width: 90%;
   height: 50vh;
   margin-top: 2em;
-  overflow-y: scroll;
+  overflow-y: scroll; 
   padding: 1em;
   overflow-x: hidden;
 }
