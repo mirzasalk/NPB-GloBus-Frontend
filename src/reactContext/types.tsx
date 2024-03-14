@@ -9,7 +9,7 @@ export interface User {
   firstName: string;
   gender: string;
   id: number;
-  isApproved: Boolean;
+  isApproved: boolean;
   lastName: string;
   password: string;
   phoneNumber: string;
