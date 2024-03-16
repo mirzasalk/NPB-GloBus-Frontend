@@ -40,6 +40,10 @@ interface AddCreditDTO {
   Credit: number;
 }
 
+interface TransactionRequestDTO {
+  UserId: number;
+  Credit: number;
+}
 interface newTicket {
   UserId: number;
   Line: string;
@@ -213,7 +217,7 @@ const Home: React.FC = () => {
     }
   }, [user]);
   useEffect(() => {
-    reversedPassengerTickets
+    reversedPassengerTickets;
   }, [reversedPassengerTickets]);
 
   const validateTicketInfo = () => {
@@ -308,7 +312,7 @@ const Home: React.FC = () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
-      await axiosInstance.post(
+      /*  await axiosInstance.post(
         "Users/addCredit",
         { Credit: addCreditValue } as AddCreditDTO,
         {
@@ -318,8 +322,18 @@ const Home: React.FC = () => {
           },
         }
       );
-
-      toast.success("You have successfully added credit.");
+*/
+      await axiosInstance.post(
+        "Users/sendTransactionRequest",
+        { Credit: addCreditValue, UserId: user.id } as TransactionRequestDTO,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      );
+      toast.success("You have successfully sended request.");
 
       setShowAddCreditDiv(!showAddCreditDiv);
       getUserById();
@@ -329,7 +343,7 @@ const Home: React.FC = () => {
     }
   };
 
-  //pdf 
+  //pdf
   const generatePDF = async (t: Ticket) => {
     const pdf = new jsPDF();
     pdf.setFont("helvetica", "bold");
@@ -372,24 +386,23 @@ const Home: React.FC = () => {
 
     pdf.addImage("barkod.png", "PNG", 150, 103, 40, 15);
 
-
     // Generate QR code with dynamic data
-  // const qrCodeData = `https://localhost:7269/Tickets/checkTicketWithScanner?ticketId=${t.id}`;
+    // const qrCodeData = `https://localhost:7269/Tickets/checkTicketWithScanner?ticketId=${t.id}`;
     const qrCodeData = `${t.id}`;
-  try {
-    pdf.addPage();
-    // Generate QR code and get data URL
-    const qrCodeDataURL = await QRCode.toDataURL(qrCodeData);
+    try {
+      pdf.addPage();
+      // Generate QR code and get data URL
+      const qrCodeDataURL = await QRCode.toDataURL(qrCodeData);
 
-    // Add the QR code image to the PDF
-    // pdf.addImage(qrCodeDataURL, 'PNG', 80, 150, 50, 50);
-    pdf.addImage(qrCodeDataURL, 'PNG', 80, 10, 50, 50);
+      // Add the QR code image to the PDF
+      // pdf.addImage(qrCodeDataURL, 'PNG', 80, 150, 50, 50);
+      pdf.addImage(qrCodeDataURL, "PNG", 80, 10, 50, 50);
 
-    pdf.save('globus_ticket.pdf');
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-  }
-};
+      pdf.save("globus_ticket.pdf");
+    } catch (error) {
+      console.error("Error generating QR code:", error);
+    }
+  };
 
   return (
     <div id="homeMain">
@@ -440,7 +453,16 @@ const Home: React.FC = () => {
             <div className={"MyTicketDiv"}>
               {reversedPassengerTickets?.map((t, index) => {
                 return (
-                  <div className={t.status == "approved"? "myTicketField" :t.status == "pending"? "myPendingTicketField":"myUnactiveTicketField"} key={index}>
+                  <div
+                    className={
+                      t.status == "approved"
+                        ? "myTicketField"
+                        : t.status == "pending"
+                        ? "myPendingTicketField"
+                        : "myUnactiveTicketField"
+                    }
+                    key={index}
+                  >
                     <div className="ticketInfoDiv">
                       <div> {t.id}</div>
                       <div>
