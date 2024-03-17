@@ -38,6 +38,8 @@ const InspectorPage: React.FC = () => {
   const [myWrittenPenalties, setMyWrittenPenalties] = useState<Penalty[]>();
   const [showWritePenaltyDiv, setShowWritePenaltyDiv] =
     useState<boolean>(false);
+  const [userToBePenalized, setUserToBePenalized] = useState<UserData>();
+
   const [penalty, setPenalty] = useState<Penalty>({
     inspectorId: 0,
     passengerID: 0,
@@ -60,6 +62,7 @@ const InspectorPage: React.FC = () => {
     credit: 0,
   });
 
+  //get written penalties
   const getMyWrittenPenalties = async () => {
     const jwtToken = localStorage.getItem("token");
 
@@ -78,6 +81,7 @@ const InspectorPage: React.FC = () => {
     }
   };
 
+  //get user by id
   const getUserById = async () => {
     const jwtToken = localStorage.getItem("token");
 
@@ -95,6 +99,7 @@ const InspectorPage: React.FC = () => {
       console.log(error);
     }
   };
+
   const [ticketId, setTicketId] = useState<number>(0);
   const [changeInspectorView, setChangeInspectorView] =
     useState<string>("Check the ticket");
@@ -123,6 +128,7 @@ const InspectorPage: React.FC = () => {
         } else {
           toast.error("Ticket is not valid");
           console.log(response.data.user.id, user.id);
+          setUserToBePenalized(response.data.user);
 
           setPenalty({
             ...penalty,
@@ -139,9 +145,10 @@ const InspectorPage: React.FC = () => {
     }
   };
   
+  //write penalty
   const WriteAPenalty = async () => {
     const jwtToken = localStorage.getItem("token");
-    console.log(penalty, "befor Recording");
+    console.log(penalty, "before recording");
     try {
       const response = await axiosInstance.post(
         "/Users/WritePenalty",
@@ -243,9 +250,9 @@ const InspectorPage: React.FC = () => {
             </div>
             <h1>Ticket is not valid</h1>
             <h4>
-              Passenger:
+              Passenger: 
               <strong>
-                {user.firstName} {user.lastName}
+                {userToBePenalized?.firstName} {userToBePenalized?.lastName}
               </strong>
             </h4>
             <button onClick={WriteAPenalty}>Write a penalty</button>
