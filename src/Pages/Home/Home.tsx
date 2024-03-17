@@ -36,10 +36,6 @@ interface TicketType {
   price: number;
 }
 
-interface AddCreditDTO {
-  Credit: number;
-}
-
 interface TransactionRequestDTO {
   UserId: number;
   Credit: number;
@@ -128,6 +124,7 @@ const Home: React.FC = () => {
     isApproved: false,
   };
 
+  //get user by id
   const getUserById = async () => {
     const jwtToken = localStorage.getItem("token");
 
@@ -147,6 +144,7 @@ const Home: React.FC = () => {
     }
   };
 
+  //get all lines
   const getAllLines = async () => {
     const jwtToken = localStorage.getItem("token");
 
@@ -166,7 +164,8 @@ const Home: React.FC = () => {
     }
   };
 
-  const getUserTicket = async () => {
+  //get user tickets
+  const getUserTickets = async () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
@@ -185,11 +184,12 @@ const Home: React.FC = () => {
     }
   };
 
+  //get ticket types
   const getTicketTypes = async () => {
     const jwtToken = localStorage.getItem("token");
 
     try {
-      const response = await axiosInstance.get("Users/getTicketTypes", {
+      const response = await axiosInstance.get("TicketTypes/getTicketTypes", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${jwtToken}`,
@@ -208,20 +208,22 @@ const Home: React.FC = () => {
     getAllLines();
     getTicketTypes();
   }, []);
+
   useEffect(() => {
-    getUserTicket();
+    getUserTickets();
     console.log(user);
     countForRole++;
     if (countForRole > 3 && user.role != "passenger") {
       navigate("/logIn");
     }
   }, [user]);
+
   useEffect(() => {
     reversedPassengerTickets;
   }, [reversedPassengerTickets]);
 
   const validateTicketInfo = () => {
-    if (user.credit > chosenTicketTypes.price) {
+    if (user.credit >= chosenTicketTypes.price) {
       if (chosenTicketTypes.type != "Choose a type") {
         newTicket.UserId = user.id;
         newTicket.TicketType = chosenTicketTypes.id;
@@ -283,7 +285,7 @@ const Home: React.FC = () => {
         toast.error("Please fill in all the fields");
       }
     } else {
-      toast.error("You don't have enough credit; please recharge your balance");
+      toast.error("You don't have enough credit; please recharge your balance.");
     }
   };
 
@@ -299,7 +301,7 @@ const Home: React.FC = () => {
 
       toast.success("You have successfully purchased the ticket.");
       setShowDivForByTicket(!showDivForByTicket);
-      getUserTicket();
+      getUserTickets();
       getUserById();
     } catch (error) {
       toast.error("Error during purchase, please try again later.");
@@ -333,7 +335,7 @@ const Home: React.FC = () => {
           },
         }
       );
-      toast.success("You have successfully sended request.");
+      toast.success("You have successfully sent a transaction request.");
 
       setShowAddCreditDiv(!showAddCreditDiv);
       getUserById();
@@ -437,7 +439,7 @@ const Home: React.FC = () => {
               setShowByTicketOrMyTicket(true);
             }}
           >
-            My Ticket
+            My Tickets
           </div>
           <div
             className="DivForchagePassengersView"
@@ -525,7 +527,7 @@ const Home: React.FC = () => {
                                 setChosenTicketTypes(t);
                               }}
                             >
-                              {t.type}
+                              {t.type + " - " + t.price}
                             </div>
                           );
                         })}

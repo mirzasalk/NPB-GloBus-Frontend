@@ -83,17 +83,20 @@ const AdminPage: React.FC = () => {
   const [lines, setLines] = useState<Line[]>();
   const [linesNewStation, setLinesNewStation] = useState<string>();
   const [newDistance, setNewDistance] = useState<string>();
+
   const [newLine, setNewLines] = useState<newLineDTO>({
     Name: "",
     Stations: [],
     Distance: [],
   });
+
   const [editLine, setEditLines] = useState<Line>({
     id: -1,
     name: "",
     stations: [],
     distance: [],
   });
+
   const [changeAdminView, setChangeAdminView] =
     useState<string>("Approve Tickets");
 
@@ -109,7 +112,6 @@ const AdminPage: React.FC = () => {
         },
       });
       if (response) {
-        console.log(response.data, "ovo gledas");
         setUnapprovedTickets(response.data.reverse());
       }
     } catch (error) {
@@ -157,6 +159,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //get all transactions
   const getAllTransactions = async () => {
     const jwtToken = localStorage.getItem("token");
 
@@ -213,10 +216,10 @@ const AdminPage: React.FC = () => {
       );
       if (response) {
         console.log(response.data);
-        toast.success("Ticket is approved");
+        toast.success("Ticket is approved.");
         getUnapprovedTickets();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
     }
   };
@@ -238,7 +241,7 @@ const AdminPage: React.FC = () => {
       );
       if (response) {
         console.log(response.data);
-        toast.success("Ticket is rejected");
+        toast.success("Ticket is rejected.");
         getUnapprovedTickets();
       }
     } catch (error) {
@@ -246,6 +249,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //reject transaction
   const rejectTransaction = async (id: number) => {
     const jwtToken = localStorage.getItem("token");
 
@@ -260,7 +264,7 @@ const AdminPage: React.FC = () => {
 
       if (response) {
         console.log(response.data);
-        toast.success("Transaction is rejected");
+        toast.success("Transaction is rejected.");
         getAllTransactions();
       }
     } catch (error) {
@@ -268,6 +272,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //delete user
   const deleteUser = async (id: number) => {
     const jwtToken = localStorage.getItem("token");
 
@@ -282,7 +287,7 @@ const AdminPage: React.FC = () => {
 
       if (response) {
         console.log(response.data);
-        toast.success("User is deleted");
+        toast.success("User is deleted.");
         getUnapprovedUsers();
         getAllInspectors();
       }
@@ -291,6 +296,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //delete line
   const deleteLine = async (id: number) => {
     const jwtToken = localStorage.getItem("token");
 
@@ -305,7 +311,7 @@ const AdminPage: React.FC = () => {
 
       if (response) {
         console.log(response.data);
-        toast.success("Line is deleted");
+        toast.success("Line is deleted.");
         getAllLines();
       }
     } catch (error) {
@@ -313,6 +319,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //promote to inspector
   const PromoteToInspector = async (id: number) => {
     const jwtToken = localStorage.getItem("token");
 
@@ -329,7 +336,7 @@ const AdminPage: React.FC = () => {
       );
       if (response) {
         console.log(response.data);
-        toast.success(`User  is promoted`);
+        toast.success(`User  is promoted.`);
         getUnapprovedUsers();
         getAllInspectors();
       }
@@ -338,6 +345,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //demote from inspector
   const DemoteFromInspector = async (id: number) => {
     const jwtToken = localStorage.getItem("token");
 
@@ -354,7 +362,7 @@ const AdminPage: React.FC = () => {
       );
       if (response) {
         console.log(response.data);
-        toast.success(`Inspector  is demoted`);
+        toast.success(`Inspector is demoted.`);
         getUnapprovedUsers();
         getAllInspectors();
       }
@@ -363,6 +371,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //add line
   const addNewLine = async () => {
     if (
       newLine.Name != "" &&
@@ -379,7 +388,7 @@ const AdminPage: React.FC = () => {
           },
         });
 
-        toast.success("You have successfully add new line.");
+        toast.success("You have successfully added a new line.");
         SetAddDivShow(false);
         setNewLines({ Name: "", Stations: [], Distance: [] });
         getAllLines();
@@ -392,7 +401,7 @@ const AdminPage: React.FC = () => {
     } else {
       let p = "";
       newLine.Name == ""
-        ? (p = "Unesite ime stanice")
+        ? (p = "Unesite ime linije")
         : newLine.Stations.length < 2
         ? (p = "Uneli ste manje od dve stanice")
         : newLine.Distance.length != newLine.Stations.length
@@ -403,6 +412,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //edit line
   const editLineRoute = async () => {
     const jwtToken = localStorage.getItem("token");
     try {
@@ -413,7 +423,7 @@ const AdminPage: React.FC = () => {
         },
       });
 
-      toast.success("You have successfully edit new line.");
+      toast.success("You have successfully edited a line.");
       SetEditDivShow(false);
       getAllLines();
     } catch (error) {
@@ -424,9 +434,9 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //add credit
   const addCredit = async () => {
     const jwtToken = localStorage.getItem("token");
-    console.log(transaction, "evo me");
     try {
       await axiosInstance.post(
         "Users/addCredit",
@@ -443,7 +453,7 @@ const AdminPage: React.FC = () => {
         }
       );
 
-      toast.success("You have successfully sended request.");
+      toast.success("You have successfully approved a transaction request.");
       getAllTransactions();
       setShowAddCreditDiv(false);
     } catch (error) {
@@ -452,11 +462,13 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  //edit station
   const editStation = (e: React.ChangeEvent<HTMLInputElement>) => {
     let temp = [...editLine.stations];
     temp[indexForEdit] = e.target.value;
     setEditLines({ ...editLine, stations: temp });
   };
+  //edit distance
   const editDistance = (e: React.ChangeEvent<HTMLInputElement>) => {
     let temp = [...editLine.distance];
     temp[indexForEdit] = e.target.value;
@@ -472,7 +484,7 @@ const AdminPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log(transactions, "evo je");
+
   }, [transactions]);
 
   return (
@@ -676,7 +688,7 @@ const AdminPage: React.FC = () => {
                     }
                   }}
                 >
-                  Add Name
+                  Add Station
                 </button>
               </div>
               <div className="lineDataInfoField">

@@ -72,7 +72,7 @@ const AdminLogin: React.FC = () => {
 
     if (validateForm()) {
       try {
-        const response = await axiosInstance.post("Admins/login", formData, {
+        const response = await axiosInstance.post("Admins/Login", formData, {
           headers: {
             "Content-Type": "application/json",
           },
